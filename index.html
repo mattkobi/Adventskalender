@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zuzannas Adventskalender</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ===== WINTER-DESIGN (für alle Spiele übernehmen) ===== */
+  :root{
+    --night:#0b1630; --night2:#1b3366; --sky:#2a4a8a;
+    --ice:#e6f3ff; --frost:rgba(255,255,255,.09); --frost-line:rgba(255,255,255,.25);
+    --gold:#ffd27a; --gold-dark:#c99a3c; --berry:#e0566e; --text:#f2f7ff;
+    --font-title:"Mountains of Christmas",cursive; --font-body:"Nunito",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{min-height:100vh;background:radial-gradient(ellipse at top,var(--sky) 0%,var(--night2) 40%,var(--night) 100%) fixed;color:var(--text);font-family:var(--font-body);overflow-x:hidden}
+  #snow{position:fixed;inset:0;pointer-events:none;z-index:0}
+  main{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:30px 14px 20px}
+
+  header{text-align:center}
+  .friends{font-size:1.5rem;letter-spacing:8px;margin-bottom:4px}
+  h1{font-family:var(--font-title);font-size:clamp(2.3rem,8.5vw,3.8rem);line-height:1.05;margin:0;color:#fff;text-shadow:0 0 20px rgba(180,220,255,.75)}
+  .sub{margin:10px 0 0;opacity:.9;font-size:1.05rem}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:26px;grid-auto-flow:dense}
+  @media(min-width:700px){.grid{grid-template-columns:repeat(7,1fr);gap:16px}}
+
+  .door{position:relative;aspect-ratio:1;border:1px solid var(--frost-line);border-radius:16px;background:var(--frost);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--text);cursor:pointer;padding:0;
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-title);font-size:2.1rem;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 8px 20px rgba(0,0,0,.28);transition:transform .2s,box-shadow .2s}
+  .door::before{content:"";position:absolute;top:-7px;left:8%;right:8%;height:15px;background:#fff;border-radius:999px 999px 10px 10px;
+    box-shadow:0 3px 6px rgba(0,0,0,.18)}
+  .door:hover{transform:translateY(-3px) rotate(-1deg)}
+  .door.big{grid-column:span 2;grid-row:span 2;font-size:4rem;border-radius:22px}
+  .door.wide{grid-column:span 2;aspect-ratio:auto}
+  .door.locked{opacity:.5;cursor:default}
+  .door.locked:hover{transform:none}
+  .door.today{border-color:var(--gold);animation:glow 2.2s ease-in-out infinite}
+  .door.open{background:linear-gradient(145deg,rgba(255,210,122,.32),rgba(224,86,110,.28));border-color:var(--gold)}
+  .door .emo{font-size:2rem;line-height:1}
+  .door.big .emo{font-size:4rem}
+  .door .corner{position:absolute;bottom:6px;right:9px;font-size:1rem;opacity:.85}
+  @keyframes glow{50%{box-shadow:0 0 0 2px var(--gold),0 0 26px rgba(255,210,122,.7)}}
+
+  .hills{position:relative;z-index:1;display:block;width:100%;height:auto;margin-top:30px}
+  footer{position:relative;z-index:1;background:#fff;color:#4d6a96;text-align:center;padding:4px 10px 24px;font-size:.9rem;margin-top:-2px}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(5,10,25,.62);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px;animation:fade .2s}
+  .hidden{display:none!important}
+  .card{position:relative;width:100%;max-width:370px;text-align:center;padding:28px 22px 24px;border-radius:24px;
+    background:linear-gradient(160deg,#21417f,#112450);border:1px solid var(--frost-line);box-shadow:0 22px 60px rgba(0,0,0,.55);animation:pop .25s}
+  .card::before{content:"";position:absolute;top:-9px;left:10%;right:10%;height:20px;background:#fff;border-radius:999px 999px 12px 12px}
+  .card h2{font-family:var(--font-title);font-size:2.2rem;margin:4px 0 8px}
+  .card .big-emo{font-size:3.6rem;line-height:1.1}
+  .hint{background:rgba(255,255,255,.09);border-radius:14px;padding:12px 14px;margin:8px 0 14px;font-style:italic;line-height:1.45}
+  .hint b{font-style:normal;display:block;font-size:.8rem;letter-spacing:1px;opacity:.7;margin-bottom:3px}
+  input{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--frost-line);background:rgba(255,255,255,.12);color:#fff;
+    font:inherit;font-size:1.15rem;font-weight:800;text-align:center;letter-spacing:3px;text-transform:uppercase;outline:none}
+  input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,210,122,.25)}
+  input::placeholder{color:rgba(255,255,255,.45);letter-spacing:1px;text-transform:none;font-weight:400}
+  .btn{display:inline-block;margin-top:12px;padding:12px 28px;border:0;border-radius:999px;background:var(--gold);color:#3a2400;
+    font:inherit;font-weight:800;font-size:1.08rem;cursor:pointer;text-decoration:none;box-shadow:0 4px 0 var(--gold-dark)}
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--gold-dark)}
+  .err{color:#ffb7c3;min-height:1.4em;margin:8px 0 0;font-weight:700}
+  .close{position:absolute;top:10px;right:14px;background:none;border:0;color:#fff;font-size:1.7rem;cursor:pointer;opacity:.75}
+  .shake{animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  @keyframes pop{from{transform:scale(.85);opacity:0}}
+  @keyframes fade{from{opacity:0}}
+</style>
+</head>
+<body>
+<canvas id="snow"></canvas>
+
+<main>
+  <header>
+    <div class="friends">🐶🕊️🐧🕊️</div>
+    <h1>Zuzannas<br>Adventskalender</h1>
+    <p class="sub" id="sub"></p>
+  </header>
+  <div class="grid" id="grid"></div>
+</main>
+
+<svg class="hills" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 90 Q150 30 320 80 T640 70 T960 60 T1200 80 V160 H0Z" fill="#cfe2f7"/>
+  <path d="M0 120 Q200 70 420 110 T820 100 T1200 105 V160 H0Z" fill="#fff"/>
+  <g fill="#1f4d3a">
+    <path d="M140 78 l14 -36 l14 36z"/><path d="M168 82 l10 -26 l10 26z"/>
+    <path d="M980 66 l16 -40 l16 40z"/><path d="M1012 72 l11 -28 l11 28z"/>
+    <path d="M600 74 l9 -24 l9 24z"/>
+  </g>
+</svg>
+<footer>Mit ganz viel Liebe gemacht 💙</footer>
+
+<div class="modal hidden" id="modal"><div class="card" id="card"></div></div>
+
+<script>
+/* ===== EINSTELLUNGEN ===== */
+const JAHR = 2026;
+const TEST_MODUS = false;   // true = alle Türchen sofort anklickbar (zum Testen)
+const SALZ = "advent2026:";
+
+/* Spiele: Ordner = Stichwort in Kleinbuchstaben, z. B. spiele/lichterkette/index.html
+   Im Code stehen nur Hashes – die Wörter selbst sind nicht im Quelltext sichtbar.
+   Neuen Hash erzeugen: Seite öffnen, Konsole (F12) → await hashWort("deinwort") */
+const TAGE = [
+  {"tag":1,"titel":"Milas Plätzchen-Fang","emoji":"🍪","hinweis":"Rund, süß und frisch aus dem Ofen – und Mila will sie alle fangen.","hash":"a502db18c47062ed99050df4096fbd3c2a86d86e71804a93d69dbe12ba454eb1"},
+  {"tag":2,"titel":"Cosmo liefert Post","emoji":"🕊️","hinweis":"Cosmo hat heute einen Job: Er bringt dir Post. Was für ein Vogel ist er heute?","hash":"b502ceda85db6083da975bcbccd565bef336c6a4507414f70ca7e79e96e8abf5"},
+  {"tag":3,"titel":"Schneeflocken-Memory","emoji":"❄️","hinweis":"Aufdecken, merken, Paare finden – ein Spieleklassiker.","hash":"24bbe24c43a800ce60c5287d7336d52a9a3d76ef094706af33dca7f2b705cfd8"},
+  {"tag":4,"titel":"Milas Schneemann","emoji":"⛄","hinweis":"Drei Kugeln, eine Karottennase und ein Schal.","hash":"c1f5196fe32a45cdde0efb42453545cc53cca68b639d281c427308141a6ea948"},
+  {"tag":5,"titel":"Kobi entwirrt die Lichterkette","emoji":"💡","hinweis":"Sie leuchtet am Baum – wenn Kobi sich nicht darin verheddert hätte.","hash":"74abc16bd021b15280a23ab0d1fa4de0a8beafa2167002cac2cd315496091a2f"},
+  {"tag":6,"titel":"Nikolaus-Stiefel","emoji":"🥾","hinweis":"Am 6. Dezember stellst du ihn geputzt vor die Tür.","hash":"869760c2d7f9e73ba6f803016a200801c1337aaf681cfef371b59b8a3b63e94e"},
+  {"tag":7,"titel":"Cosmo und die Glöckchen","emoji":"🔔","hinweis":"Sie klingelt, wenn das Christkind kommt.","hash":"4de6224ff5ce1d867fd9b899635d667eafc265818dd9ce58905824cd78fa2c31"},
+  {"tag":8,"titel":"Kobi stapelt Geschenke","emoji":"🎁","hinweis":"Eingepackt, mit Schleife, sie liegen unterm Baum.","hash":"24082742561df9c79d598e88066325eac95ca7d2a0c3f34a772e253f53f58da5"},
+  {"tag":9,"titel":"Milas Schlittenfahrt","emoji":"🛷","hinweis":"Er hat Kufen, und mit ihm geht's den Hang hinunter.","hash":"fa2fa027f7117441ab68d56acc352390c1b9055f4e92cb339f6ab46cebe76ce5"},
+  {"tag":10,"titel":"Wandas Wunschzettel","emoji":"📜","hinweis":"Darauf schreibt man, was man sich zu Weihnachten wünscht.","hash":"ba1ad88944648332e620776c989c6d29c831881f48f7da5b28c72e9965333064"},
+  {"tag":11,"titel":"Plätzchen verzieren","emoji":"🧁","hinweis":"Weiß, süß und klebrig – er kommt oben aufs Plätzchen.","hash":"3ad56ebbba989d2d601ee52cea9ae799c411c66ed47d4c6ade63811b878a15a9"},
+  {"tag":12,"titel":"Mila sucht ihr Halsband","emoji":"🐶","hinweis":"Mila trägt es jeden Tag um den Hals – und hat es verloren.","hash":"835722bc6d95013e3c49f7a2d46acb6a9f9323b0103ba36a856acf8fd1b88c89"},
+  {"tag":13,"titel":"Cosmo im Schneesturm","emoji":"🌨️","hinweis":"Viel Wind, viel Schnee und kaum Sicht.","hash":"7610605897871c84d506f828c0cc58523646b1f9acb1b9db71527f2e99d18200"},
+  {"tag":14,"titel":"Mistelzweig-Quiz","emoji":"🌿","hinweis":"Wer darunter steht, muss sich küssen.","hash":"ee93762718a019fa700dd8fc0e20dccecb116996f306294cd8a81351677a72bc"},
+  {"tag":15,"titel":"Mila backt Pierogi","emoji":"🥟","hinweis":"Polnische Teigtaschen – und Mila hat großen Hunger.","hash":"73bebbe13ab7703ceef955084e797ca8ec58e88b8ed94fa94f1f4272ef8976de"},
+  {"tag":16,"titel":"Kobis Bauchrutsch-Rennen","emoji":"🐧","hinweis":"So rutscht Kobi am allerliebsten übers Eis.","hash":"7e4094f240804e0d6eec3623fec95179fd5e532b5d567f92c6c86552304ee60c"},
+  {"tag":17,"titel":"Cosmo & Wanda","emoji":"💞","hinweis":"Cosmo und Wanda – zusammen sind sie ein …","hash":"6abba3f9c5ae4d8dc47ccad06403beb4461ffc5af5923846a646112dcbe00c3e"},
+  {"tag":18,"titel":"Schneekugel schütteln","emoji":"🔮","hinweis":"Einmal schütteln, und drinnen fängt es an zu schneien.","hash":"2a0a5db9c14deb7f0171b8e83afce5d680a3f75a12a6e6bb4f07fa3825bdf5f4"},
+  {"tag":19,"titel":"Kobi und der Sternenhimmel","emoji":"✨","hinweis":"Verbinde die Sterne am Himmel, und es entsteht ein …","hash":"6217dc0aa6e428defb14cb7db290a855dadab347cd8b5394e3c5c799782fdca5"},
+  {"tag":20,"titel":"Milas Adventskranz","emoji":"🕯️","hinweis":"Vier Kerzen auf Tannengrün.","hash":"63ac5ba5124c2c69c9927afb977c6f48c4f3e78f867c0eaacd19ca467bd4a534"},
+  {"tag":21,"titel":"Cosmos Kurierdienst","emoji":"💌","hinweis":"Cosmo liefert heute Herzen aus. Er arbeitet als …","hash":"48c80be68712248f3e24cc2479c865055d3431936c4183877c1cde6dc12c7060"},
+  {"tag":22,"titel":"Weihnachtsbaum schmücken","emoji":"🎄","hinweis":"Eine Tanne mit Kugeln, Lichtern und Lametta.","hash":"5b404ed525ea3365dfd83c182f421e81548c0c8d331567873056ee10ef0551e1"},
+  {"tag":23,"titel":"Wanda verliert den Stern","emoji":"⭐","hinweis":"Er gehört ganz oben auf die Baumspitze.","hash":"c9284ded8931621dc098305af875d0effa04192989d6f279966014d78b231e43"},
+  {"tag":24,"titel":"Das große Finale","emoji":"💝","hinweis":"Heiligabend: Endlich dürfen die Geschenke ausgepackt werden!","hash":"45c9b7f10ec22297933dcf52ff0f23bb1b028e75046d6b28ef90a2c84771a128"}
+];
+
+/* Reihenfolge der Türchen im Raster (gemischt wie ein echter Kalender) */
+const REIHENFOLGE = [13,4,20,9,1,17,24,6,22,11,2,15,8,19,3,23,12,7,16,21,5,10,18,14];
+
+/* ===== LOGIK ===== */
+const $ = id => document.getElementById(id);
+const norm = s => s.trim().toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z]/g,"");
+async function sha(s){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+window.hashWort = async w => sha(SALZ + norm(w));
+
+let offen = {};
+try { offen = JSON.parse(localStorage.getItem("advent-offen") || "{}"); } catch(e) {}
+const speichern = () => { try { localStorage.setItem("advent-offen", JSON.stringify(offen)); } catch(e) {} };
+
+const jetzt = new Date();
+const imDezember = jetzt.getFullYear() === JAHR && jetzt.getMonth() === 11;
+const freigeschaltet = t => TEST_MODUS || jetzt.getFullYear() > JAHR || (imDezember && jetzt.getDate() >= t);
+const istHeute = t => imDezember && jetzt.getDate() === t;
+
+function untertitel(){
+  let txt;
+  if (jetzt.getFullYear() > JAHR || (imDezember && jetzt.getDate() > 24)) txt = "Frohe Weihnachten, mein Schatz 🎄💙";
+  else if (imDezember) txt = jetzt.getDate() === 24 ? "Heiligabend! Das letzte Türchen wartet ✨" : `Heute ist Türchen ${jetzt.getDate()} dran ✨`;
+  else {
+    const start = new Date(JAHR, 11, 1), tage = Math.ceil((start - jetzt) / 864e5);
+    txt = tage > 0 ? `Noch ${tage} ${tage === 1 ? "Tag" : "Tage"} bis zum ersten Türchen ❄️` : "Bald geht's los ❄️";
+  }
+  $("sub").textContent = txt;
+}
+
+function zeichnen(){
+  $("grid").innerHTML = "";
+  REIHENFOLGE.forEach(nr => {
+    const d = TAGE[nr-1], b = document.createElement("button");
+    b.className = "door" + (nr === 24 ? " big" : nr === 6 ? " wide" : "");
+    if (offen[nr]) { b.classList.add("open"); b.innerHTML = `<span class="emo">${d.emoji}</span><span class="corner">${nr}</span>`; }
+    else { b.textContent = nr; if (!freigeschaltet(nr)) b.classList.add("locked"); }
+    if (istHeute(nr) && !offen[nr]) b.classList.add("today");
+    b.setAttribute("aria-label", "Türchen " + nr);
+    b.onclick = () => oeffnen(nr);
+    $("grid").appendChild(b);
+  });
+}
+
+function zeigeKarte(html){ $("card").innerHTML = `<button class="close" onclick="schliessen()" aria-label="Schließen">×</button>` + html; $("modal").classList.remove("hidden"); }
+function schliessen(){ $("modal").classList.add("hidden"); }
+$("modal").addEventListener("click", e => { if (e.target.id === "modal") schliessen(); });
+addEventListener("keydown", e => { if (e.key === "Escape") schliessen(); });
+
+function oeffnen(nr){
+  const d = TAGE[nr-1];
+  if (offen[nr]) return erfolg(nr, offen[nr]);
+  if (!freigeschaltet(nr)) {
+    return zeigeKarte(`<div class="big-emo">🔒</div><h2>Noch nicht!</h2><p>Dieses Türchen öffnet sich am <b>${nr}. Dezember</b>.<br>Ein bisschen Geduld, Schatz ❄️</p>`);
+  }
+  zeigeKarte(`<h2>Türchen ${nr}</h2>
+    <div class="hint"><b>DEIN HINWEIS</b>${d.hinweis}</div>
+    <form id="f"><input id="wort" placeholder="Zauberwort eingeben" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <p class="err" id="err"></p><button class="btn" type="submit">Türchen öffnen 🔑</button></form>`);
+  setTimeout(() => $("wort").focus(), 50);
+  $("f").addEventListener("submit", async e => {
+    e.preventDefault();
+    const w = norm($("wort").value);
+    if (!w) return;
+    if (await sha(SALZ + w) === d.hash) { offen[nr] = w; speichern(); zeichnen(); erfolg(nr, w); }
+    else {
+      $("err").textContent = ["Das ist es leider nicht ❄️","Knapp daneben? Versuch's nochmal!","Mila schüttelt den Kopf 🐶"][Math.floor(Math.random()*3)];
+      $("card").classList.remove("shake"); void $("card").offsetWidth; $("card").classList.add("shake");
+    }
+  });
+}
+
+function erfolg(nr, wort){
+  const d = TAGE[nr-1];
+  zeigeKarte(`<div class="big-emo">${d.emoji}</div><h2>Türchen ${nr}</h2>
+    <p style="font-size:1.1rem;margin:0 0 6px"><b>${d.titel}</b></p>
+    <a class="btn" href="spiele/${wort}/">Spiel starten ▶</a>`);
+}
+
+/* ===== SCHNEE ===== */
+const cv = $("snow"), cx = cv.getContext("2d");
+let flocken = [];
+function groesse(){
+  cv.width = innerWidth; cv.height = innerHeight;
+  flocken = Array.from({length: Math.round(innerWidth/8)}, () => ({ x:Math.random()*cv.width, y:Math.random()*cv.height, r:Math.random()*2.4+.6, s:Math.random()*.6+.3, w:Math.random()*Math.PI*2 }));
+}
+function schnee(){
+  cx.clearRect(0,0,cv.width,cv.height); cx.fillStyle = "rgba(255,255,255,.85)";
+  for (const f of flocken){
+    f.y += f.s; f.w += .01; f.x += Math.sin(f.w)*.4;
+    if (f.y > cv.height + 5){ f.y = -5; f.x = Math.random()*cv.width; }
+    cx.beginPath(); cx.arc(f.x,f.y,f.r,0,Math.PI*2); cx.fill();
+  }
+  requestAnimationFrame(schnee);
+}
+addEventListener("resize", groesse);
+groesse(); schnee(); untertitel(); zeichnen();
+</script>
+</body>
+</html>

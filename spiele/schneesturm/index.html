@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Türchen 13 – Cosmo im Schneesturm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#0b1630; --night2:#1b3366; --sky:#2a4a8a;
+    --ice:#e6f3ff; --frost:rgba(255,255,255,.09); --frost-line:rgba(255,255,255,.25);
+    --gold:#ffd27a; --gold-dark:#c99a3c; --berry:#e0566e; --text:#f2f7ff;
+    --font-title:"Mountains of Christmas",cursive; --font-body:"Nunito",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{min-height:100vh;background:radial-gradient(ellipse at top,var(--sky) 0%,var(--night2) 40%,var(--night) 100%) fixed;color:var(--text);
+    font-family:var(--font-body);overflow-x:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  #snow{position:fixed;inset:0;pointer-events:none;z-index:0}
+  main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:14px 12px 30px;display:flex;flex-direction:column;align-items:center}
+  .top{width:100%;display:flex;justify-content:space-between;align-items:center}
+  .back{color:var(--ice);text-decoration:none;font-weight:700;opacity:.85;font-size:.95rem}
+  .badge{background:var(--frost);border:1px solid var(--frost-line);border-radius:999px;padding:4px 12px;font-size:.85rem;font-weight:700}
+  h1{font-family:var(--font-title);font-size:clamp(1.9rem,7vw,2.6rem);line-height:1.1;margin:8px 0 4px;text-align:center;text-shadow:0 0 16px rgba(180,220,255,.6)}
+  #hud{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-weight:800;min-height:1.5em;margin-bottom:8px}
+  #stage{position:relative;width:min(400px,94vw);display:flex;flex-direction:column;align-items:center;gap:10px}
+  .game-canvas{width:100%;display:block;border-radius:20px;border:1px solid var(--frost-line);box-shadow:0 10px 30px rgba(0,0,0,.35);touch-action:none}
+  .hint{margin-top:12px;font-size:.88rem;opacity:.7;text-align:center}
+  .panel{width:100%;background:var(--frost);border:1px solid var(--frost-line);border-radius:20px;padding:16px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .btn{display:inline-block;margin:6px;padding:12px 26px;border:0;border-radius:999px;background:var(--gold);color:#3a2400;font:inherit;font-weight:800;
+    font-size:1.05rem;cursor:pointer;text-decoration:none;box-shadow:0 4px 0 var(--gold-dark)}
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--gold-dark)}
+  .btn.ghost{background:rgba(255,255,255,.14);color:var(--text);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+  .pad{display:flex;gap:10px;justify-content:center;width:100%}
+  .pad button{flex:1;max-width:110px;padding:14px 0;font-size:1.4rem;border-radius:16px;border:1px solid var(--frost-line);background:var(--frost);color:#fff;touch-action:none}
+  .pad button:active{background:rgba(255,255,255,.25)}
+  .modal{position:fixed;inset:0;background:rgba(5,10,25,.62);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px;animation:fade .2s}
+  .hidden{display:none!important}
+  .card{position:relative;width:100%;max-width:380px;text-align:center;padding:28px 22px 22px;border-radius:24px;
+    background:linear-gradient(160deg,#21417f,#112450);border:1px solid var(--frost-line);box-shadow:0 22px 60px rgba(0,0,0,.55);animation:pop .25s}
+  .card::before{content:"";position:absolute;top:-9px;left:10%;right:10%;height:20px;background:#fff;border-radius:999px 999px 12px 12px}
+  .card h2{font-family:var(--font-title);font-size:2.1rem;margin:4px 0 8px}
+  .card p{line-height:1.5;margin:6px 0 12px}
+  .big-emo{font-size:3.4rem;line-height:1.15}
+  .letter{background:#fffaf3;color:#4a2b22;border-radius:16px;padding:16px;margin:10px 0 8px;line-height:1.55;font-size:1.05rem;border:2px dashed #e7a3b6}
+  .shake{animation:shake .4s}
+  .heart{position:fixed;top:-40px;font-size:24px;pointer-events:none;animation:fall linear forwards;z-index:50}
+  @keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+  @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  @keyframes pop{from{transform:scale(.85);opacity:0}}
+  @keyframes fade{from{opacity:0}}
+</style>
+</head>
+<body>
+<canvas id="snow"></canvas>
+<main>
+  <div class="top"><a class="back" href="../../">← Kalender</a><span class="badge">Türchen 13</span></div>
+  <h1>🌨️ Cosmo im Schneesturm</h1>
+  <div id="hud"></div>
+  <div id="stage"></div>
+  <div class="hint" id="hint">Finger halten oder Pfeiltasten – Cosmo fliegt dorthin</div>
+</main>
+<div class="modal hidden" id="modal"><div class="card" id="card"></div></div>
+
+<script>
+/* ===== GEMEINSAME HELFER ===== */
+const $ = id => document.getElementById(id);
+const rand = (a,b) => a + Math.random()*(b-a);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const dist = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+const hud = html => $("hud").innerHTML = html;
+const TITEL = "Cosmo im Schneesturm";
+
+function makeCanvas(w=400,h=560){
+  const c = document.createElement("canvas"); c.className = "game-canvas";
+  $("stage").appendChild(c);
+  const d = Math.min(2, devicePixelRatio||1); c.width = w*d; c.height = h*d; c.style.aspectRatio = w+"/"+h;
+  const ctx = c.getContext("2d"); ctx.scale(d,d);
+  return { c, ctx, W:w, H:h };
+}
+function emoji(ctx,e,x,y,s){ ctx.fillStyle="#000"; ctx.font = `${s}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",serif`; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(e,x,y); }
+function text(ctx,t,x,y,s=16,col="#fff",font="Nunito, sans-serif",weight="800"){ ctx.font=`${weight} ${s}px ${font}`; ctx.fillStyle=col; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(t,x,y); }
+function nightSky(ctx,W,H,top="#1f3d7a",bottom="#0b1630"){ const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,top); g.addColorStop(1,bottom); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+
+/* Mila – die braune Hündin, mit Canvas gezeichnet */
+function drawMila(ctx,x,y,s=1,t=0,flip=false){
+  const wag = Math.sin(t*0.3)*8;
+  ctx.save(); ctx.translate(x,y); ctx.scale(flip?-s:s,s);
+  ctx.strokeStyle="#6b4423"; ctx.lineWidth=5; ctx.lineCap="round";
+  ctx.beginPath(); ctx.moveTo(18,6); ctx.quadraticCurveTo(30,-4+wag,28,-14+wag); ctx.stroke();
+  ctx.fillStyle="#7a4b24"; [[-10,18],[-2,18],[10,18],[18,18]].forEach(([lx,ly])=>ctx.fillRect(lx-2.5,ly-6,5,12));
+  ctx.fillStyle="#8b5a2b"; ctx.beginPath(); ctx.ellipse(4,8,19,12,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#9c6633"; ctx.beginPath(); ctx.arc(-12,-8,13,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#5e3a1a";
+  ctx.beginPath(); ctx.ellipse(-23,-6,5,10,0.35,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-1,-6,5,10,-0.35,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#c99b6c"; ctx.beginPath(); ctx.ellipse(-12,-1,7,5,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#1d1d1d"; ctx.beginPath(); ctx.arc(-12,-4,2.6,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-17,-12,2,0,Math.PI*2); ctx.arc(-7,-12,2,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#e0566e"; ctx.fillRect(-20,3,16,3);
+  ctx.fillStyle="#e0566e"; ctx.beginPath(); ctx.moveTo(-26,-20); ctx.lineTo(-14,-24); ctx.lineTo(-2,-20); ctx.lineTo(-14,-30); ctx.closePath(); ctx.fill(); // Weihnachtsmütze
+  ctx.fillStyle="#fff"; ctx.fillRect(-26,-21,24,4); ctx.beginPath(); ctx.arc(-14,-31,3,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+/* Tauben: Cosmo (grau) und Wanda (mit rosa Schleife) */
+function drawBird(ctx,x,y,s=1,wanda=false,t=0,flip=false){
+  ctx.save(); ctx.translate(x,y); ctx.scale(flip?-s:s,s);
+  const flap = Math.sin(t*0.4)*6;
+  ctx.fillStyle = wanda ? "#c9c3d6" : "#9aa3b5";
+  ctx.beginPath(); ctx.ellipse(0,0,16,11,0,0,Math.PI*2); ctx.fill();                        // Körper
+  ctx.fillStyle = wanda ? "#b3abc6" : "#7f889b";
+  ctx.beginPath(); ctx.moveTo(-2,-2); ctx.quadraticCurveTo(6,-16-flap,14,-4); ctx.closePath(); ctx.fill(); // Flügel
+  ctx.beginPath(); ctx.moveTo(-14,2); ctx.lineTo(-24,-2); ctx.lineTo(-22,6); ctx.closePath(); ctx.fill(); // Schwanz
+  ctx.fillStyle = wanda ? "#d6d0e2" : "#a9b1c2"; ctx.beginPath(); ctx.arc(14,-8,8,0,Math.PI*2); ctx.fill(); // Kopf
+  ctx.fillStyle = "#5fb09a"; ctx.beginPath(); ctx.arc(10,-2,5,0,Math.PI); ctx.fill();             // Halsschimmer
+  ctx.fillStyle="#222"; ctx.beginPath(); ctx.arc(16,-10,1.8,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#f0a35b"; ctx.beginPath(); ctx.moveTo(21,-8); ctx.lineTo(27,-6); ctx.lineTo(21,-5); ctx.fill();
+  if (wanda){ ctx.fillStyle="#ff7fae"; ctx.beginPath(); ctx.moveTo(10,-16); ctx.lineTo(4,-21); ctx.lineTo(4,-13); ctx.closePath(); ctx.moveTo(10,-16); ctx.lineTo(16,-21); ctx.lineTo(16,-13); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+/* Kobi – der Pinguin mit Schal */
+function drawKobi(ctx,x,y,s=1,t=0,flip=false,belly=false){
+  ctx.save(); ctx.translate(x,y); ctx.scale(flip?-s:s,s);
+  if (belly) ctx.rotate(Math.PI/2*0.9);
+  const sway = Math.sin(t*0.25)*0.08; ctx.rotate(sway);
+  ctx.fillStyle="#f29b38"; ctx.beginPath(); ctx.ellipse(-7,22,7,3,0,0,Math.PI*2); ctx.ellipse(7,22,7,3,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#1f2a3c"; ctx.beginPath(); ctx.ellipse(0,2,17,22,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#fff"; ctx.beginPath(); ctx.ellipse(0,7,11,15,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#1f2a3c"; ctx.beginPath(); ctx.ellipse(-16,4,5,12,0.3,0,Math.PI*2); ctx.ellipse(16,4,5,12,-0.3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(-5,-10,4,0,Math.PI*2); ctx.arc(5,-10,4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(-4,-10,2,0,Math.PI*2); ctx.arc(6,-10,2,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#f29b38"; ctx.beginPath(); ctx.moveTo(-4,-5); ctx.lineTo(4,-5); ctx.lineTo(0,0); ctx.fill();
+  ctx.fillStyle="#e0566e"; ctx.fillRect(-14,-3,28,5); ctx.fillRect(6,-1,6,12);                     // Schal
+  ctx.restore();
+}
+
+/* Tastatur & Zeiger */
+const keys = {};
+addEventListener("keydown", e => { keys[e.key.length===1?e.key.toLowerCase():e.key] = true; if (e.key.startsWith("Arrow") || e.key===" ") e.preventDefault(); });
+addEventListener("keyup",   e => { keys[e.key.length===1?e.key.toLowerCase():e.key] = false; });
+function pointer(c,W,H){
+  const p = { down:false, x:W/2, y:H/2, onTap:null };
+  const pos = e => { const r=c.getBoundingClientRect(); p.x=(e.clientX-r.left)/r.width*W; p.y=(e.clientY-r.top)/r.height*H; };
+  c.addEventListener("pointerdown", e => { pos(e); p.down=true; try{c.setPointerCapture(e.pointerId);}catch(_){} if (p.onTap) p.onTap(p.x,p.y); });
+  c.addEventListener("pointermove", e => pos(e));
+  ["pointerup","pointercancel"].forEach(ev => c.addEventListener(ev, () => p.down=false));
+  return p;
+}
+function holdButton(btn, key){
+  const on = e => { e.preventDefault(); keys[key]=true; }, off = () => keys[key]=false;
+  btn.addEventListener("pointerdown", on); ["pointerup","pointerleave","pointercancel"].forEach(ev=>btn.addEventListener(ev,off));
+}
+
+/* Spiel-Schleife */
+function loop(fn){ let last=0; function f(ts){ const dt=Math.min(3,(ts-last)/16.67||1); last=ts; fn(dt); requestAnimationFrame(f); } requestAnimationFrame(f); }
+
+/* Ton */
+let ac;
+function beep(freq=660,dur=.12,type="sine",vol=.15){
+  try{ ac = ac || new (window.AudioContext||window.webkitAudioContext)(); const o=ac.createOscillator(), g=ac.createGain();
+    o.type=type; o.frequency.value=freq; g.gain.setValueAtTime(vol,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dur);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+dur); }catch(e){}
+}
+
+/* Karten / Overlays */
+function zeigeKarte(html){ $("card").innerHTML = html; $("modal").classList.remove("hidden"); }
+function schliesseKarte(){ $("modal").classList.add("hidden"); }
+function start(text, onStart, emo="🌨️"){
+  zeigeKarte(`<div class="big-emo">${emo}</div><h2>${TITEL}</h2><p>${text}</p><button class="btn" id="go">Los geht's!</button>`);
+  $("go").onclick = () => { schliesseKarte(); beep(880,.08); onStart && onStart(); };
+}
+function info(emo, titel, text, knopf, weiter){
+  zeigeKarte(`<div class="big-emo">${emo}</div><h2>${titel}</h2><p>${text}</p><button class="btn" id="go">${knopf}</button>`);
+  $("go").onclick = () => { schliesseKarte(); weiter && weiter(); };
+}
+function herzregen(n=50){
+  for (let i=0;i<n;i++) setTimeout(()=>{ const h=document.createElement("span"); h.className="heart";
+    h.textContent=pick(["💙","❄️","💖","✨","🤍"]); h.style.left=rand(0,100)+"vw"; h.style.animationDuration=rand(2.5,5)+"s";
+    document.body.appendChild(h); setTimeout(()=>h.remove(),5500); }, i*70);
+}
+let gewonnen = false;
+function sieg(botschaft, emo="💙"){
+  if (gewonnen) return; gewonnen = true;
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18,"triangle"),i*120));
+  zeigeKarte(`<div class="big-emo">${emo}</div><h2>Geschafft!</h2><div class="letter">${botschaft}</div>
+    <button class="btn ghost" onclick="location.reload()">Nochmal</button><a class="btn" href="../../">Zum Kalender</a>`);
+  herzregen();
+}
+function wackeln(el){ el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+
+/* Hintergrund-Schnee */
+(function(){
+  const cv=$("snow"), cx=cv.getContext("2d"); let fl=[];
+  const gr=()=>{ cv.width=innerWidth; cv.height=innerHeight; fl=Array.from({length:Math.round(innerWidth/12)},()=>({x:rand(0,cv.width),y:rand(0,cv.height),r:rand(.6,2.2),s:rand(.25,.8),w:rand(0,6)})); };
+  const go=()=>{ cx.clearRect(0,0,cv.width,cv.height); cx.fillStyle="rgba(255,255,255,.7)";
+    for(const f of fl){ f.y+=f.s; f.w+=.01; f.x+=Math.sin(f.w)*.35; if(f.y>cv.height+4){f.y=-4;f.x=rand(0,cv.width);} cx.beginPath(); cx.arc(f.x,f.y,f.r,0,7); cx.fill(); }
+    requestAnimationFrame(go); };
+  addEventListener("resize",gr); gr(); go();
+})();
+</script>
+
+<script>
+const BOTSCHAFT = "Cosmo hat durch den Sturm zur Laterne gefunden. Egal wie stürmisch es wird – ich finde immer den Weg zu dir. 🌨️💙";
+const ZIEL = 5;
+const { c, ctx, W, H } = makeCanvas();
+const p = pointer(c, W, H);
+const START = { x:W/2, y:H-50 }, LATERNE = { x:W/2, y:52 };
+let cosmo, kerzen, wolken, wind = 0, windZiel = 0, windT = 0, t = 0, laeuft = false, blink = 0, flocken = [];
+function reset(){
+  cosmo = { ...START }; kerzen = [];
+  while (kerzen.length < ZIEL){ const k={x:rand(40,W-40),y:rand(130,H-130)}; if (kerzen.every(o=>dist(o,k)>80)) kerzen.push(k); }
+  wolken = Array.from({length:5},()=>{ const a=rand(0,6.28), s=rand(1.2,2.1); return { x:rand(40,W-40), y:rand(140,H-160), vx:Math.cos(a)*s, vy:Math.sin(a)*s }; });
+  flocken = Array.from({length:120},()=>({x:rand(0,W),y:rand(0,H),s:rand(1,3)}));
+}
+function update(dt){
+  windT -= dt; if (windT <= 0){ windZiel = rand(-2.2,2.2); windT = rand(90,180); }
+  wind += (windZiel - wind)*.02*dt;
+  let dx=0, dy=0;
+  if (keys.ArrowLeft||keys.a) dx--; if (keys.ArrowRight||keys.d) dx++; if (keys.ArrowUp||keys.w) dy--; if (keys.ArrowDown||keys.s) dy++;
+  if (p.down){ const vx=p.x-cosmo.x, vy=p.y-cosmo.y, m=Math.hypot(vx,vy); if (m>6){ dx=vx/m; dy=vy/m; } }
+  const m = Math.hypot(dx,dy)||1;
+  cosmo.x = Math.max(18, Math.min(W-18, cosmo.x + (dx/m*3.2 + wind*.55)*dt));
+  cosmo.y = Math.max(18, Math.min(H-18, cosmo.y + dy/m*3.2*dt));
+  for (const w of wolken){
+    w.x += (w.vx + wind*.3)*dt; w.y += w.vy*dt;
+    if (w.x<30||w.x>W-30) w.vx*=-1; if (w.y<110||w.y>H-110) w.vy*=-1;
+    w.x=Math.max(30,Math.min(W-30,w.x)); w.y=Math.max(110,Math.min(H-110,w.y));
+    if (blink<=0 && dist(w,cosmo) < 34){ blink = 80; beep(150,.3,"square"); cosmo = { ...START }; }
+  }
+  kerzen = kerzen.filter(k => { if (dist(k,cosmo) < 26){ beep(800+(ZIEL-kerzen.length)*80,.1,"triangle"); return false; } return true; });
+  if (!kerzen.length && dist(cosmo,LATERNE) < 34){ laeuft=false; sieg(BOTSCHAFT,"🏮"); }
+  for (const f of flocken){ f.x += (wind*1.6 + .3)*dt*f.s*.6; f.y += f.s*dt; if (f.y>H) f.y=0; if (f.x>W) f.x=0; if (f.x<0) f.x=W; }
+  blink -= dt;
+}
+function draw(){
+  nightSky(ctx,W,H,"#3b5687","#1a2c52");
+  ctx.fillStyle="rgba(255,255,255,.85)"; for (const f of flocken){ ctx.fillRect(f.x,f.y,f.s,f.s); }
+  emoji(ctx,"🏮",LATERNE.x,LATERNE.y,40);
+  if (kerzen.length){ ctx.strokeStyle="#4a4a4a"; ctx.lineWidth=2; ctx.strokeRect(LATERNE.x-28,LATERNE.y-30,56,62); }
+  kerzen.forEach(k => emoji(ctx,"🕯️",k.x,k.y+Math.sin(t*.1+k.x)*2,26));
+  for (const w of wolken) emoji(ctx,"🌨️",w.x,w.y,44);
+  if (!(blink>0 && Math.floor(t/5)%2)) drawBird(ctx,cosmo.x,cosmo.y,1.1,false,t,wind<-.5);
+  const g = ctx.createRadialGradient(cosmo.x,cosmo.y,60,cosmo.x,cosmo.y,180);
+  g.addColorStop(0,"rgba(8,12,30,0)"); g.addColorStop(1,"rgba(8,12,30,.9)"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  const lg = ctx.createRadialGradient(LATERNE.x,LATERNE.y,5,LATERNE.x,LATERNE.y,70); lg.addColorStop(0,"rgba(255,200,120,.45)"); lg.addColorStop(1,"rgba(255,200,120,0)");
+  ctx.fillStyle=lg; ctx.fillRect(0,0,W,140);
+  if (Math.abs(wind) > 1.2) text(ctx, wind>0 ? "Wind → → →" : "← ← ← Wind", W/2, H-16, 14, "rgba(255,255,255,.75)");
+}
+reset();
+loop(dt => { t += dt; if (laeuft) update(dt); draw(); hud(`<span>🕯️ ${ZIEL-kerzen.length}/${ZIEL} Kerzen</span>`); });
+start("Ein Schneesturm! Cosmo muss zur warmen Laterne 🏮 oben. Sammle vorher <b>5 Kerzen</b> 🕯️, dann geht sie auf.<br>Weich den Schneewolken aus – und pass auf den Wind auf!", () => laeuft = true, "🕊️🌨️");
+</script>
+
+</body>
+</html>
